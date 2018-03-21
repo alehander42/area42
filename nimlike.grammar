@@ -1,0 +1,48 @@
+NIMLIKE:
+
+indented: 2 space
+
+program =>                (#topLevel[]:topLevel nl)*
+topLevel =>               function | call | if_statement
+// @merge merges the fields of a child rule into the current result
+// here, function will have #functionArgs and #types from functionArg
+function =>               "proc" ws #name:label leftParen @merge:join(functionArg, ws comma ws) rightParen colon ws #functionArgs[]:typ ws "=" #expression:code
+functionArg => 		      #functionArgs[]:label colon #types[]:typ
+call =>                   #function:expression leftParen #args:join(expression, ws comma ws) rightParen
+expression =>             element | call | binary
+element =>                integer | label
+label =>                  label:/[a-z\_\+\=\*]+/
+integer =>                i:/"[0-9]+"/
+code => 			      nl indent (#expressions[]:topLevel nl)+ dedent
+if_statement => 	      "if" ws #test:expression colon #if_branch:code @merge:else_branch?
+else_branch => 			  "else" colon #else_branch:code
+binary => 			      #left:expression ws op ws #right:expression
+op => 					  "+" | "-" | "*" | "/" | "==" | "!="
+
+typ =>                    #typeLabel:/[A-Z][a-zA-Z\_]*/
+
+// Type typ =>               atom
+// Type atom =>              #label:/[A-Z][a-zA-Z\-]*/
+
+
+// proc fac(n: int): int =
+//   if n == 1:
+//     1
+//   else:
+//     n * fac(n - 1)
+
+// Node(
+//   kind: N.Program,
+//   topLevel: @[
+//     Node(
+//       kind: N.Function,
+//       types: @[
+//         Type(
+//           kind: T.Atom,
+//           label: "int"),
+//         Type(
+//           kind: T.Atom,
+//           label: "int")],
+//       function: Node(kind: N.Label, label: "fac"),
+//       functionArgs: @[Node(kind: N.Label, label: "n")])])
+

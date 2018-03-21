@@ -1,0 +1,42 @@
+LISPY:
+
+program =>                (#topLevel[]:topLevel nl)*
+topLevel =>               function | call 
+// @merge merges the fields of a child rule into the current result
+// here, Function will have #types field from typeDefinition and #name, #functionArgs and #expression from functionDefinition
+function =>               @merge:typeDefinition @merge:functionDefinition
+call =>                   leftParen #function:expression ws #args:join(expression, ws) rightParen
+typeDefinition =>         leftParen "type" ws #types:join(typ, ws) rightParen
+functionDefinition =>     leftParen "function" ws #name:label ws leftParen #functionArgs:join(label, ws) rightParen #expression:expression rightParen
+expression =>             element | call
+element =>                integer | label
+label =>                  label:/[a-z\-\+\=\*]+/
+integer =>                i:/"[0-9]+"/
+
+typ =>                    #typeLabel:/[A-Z][a-zA-Z\-]*/
+
+// Type typ =>               atom
+// Type atom =>              #label:/[A-Z][a-zA-Z\-]*/
+
+
+// (type int int)
+// (def fac (n)
+//   (if (== n 1)
+//     1
+//     (* n (fac (- n 1)))))
+
+// Node(
+//   kind: N.Program,
+//   topLevel: @[
+//     Node(
+//       kind: N.Function,
+//       types: @[
+//         Type(
+//           kind: T.Atom,
+//           label: "int"),
+//         Type(
+//           kind: T.Atom,
+//           label: "int")],
+//       function: Node(kind: N.Label, label: "fac"),
+//       functionArgs: @[Node(kind: N.Label, label: "n")])])
+

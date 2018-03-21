@@ -6,7 +6,7 @@ macro grammar(rules: untyped): untyped =
 # ws nl leftParen rightParen are builtins
 
 grammar:
-  program =>              *(topLevel <- topLevel nl) # topLevel will be a seq with all the nodes
+  program =>              *([topLevel]: topLevel nl) # topLevel will be a seq with all the nodes
   topLevel =>             function | call 
   function =>             typeDefinition functionDefinition
   call =>                 leftParen function:expression ws args:join(expression, ws) rightParen
@@ -17,3 +17,7 @@ grammar:
   element =>              integer | label
   label =>                label:regex(r"[a-z\-\+\=\*]+")
   integer =>              i:regex(r"[0-9]+")
+
+  #e => *([elements.key]: key colon [elements.value]: expression)
+
+  e => *(types<-Type args<-Arg)
